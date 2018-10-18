@@ -19,3 +19,6 @@ Taking the online Stanford iOS 11 and Swift 4 course taught by Paul Hegarty
 15. Alerts, Notifications, Application Lifecycle
 16. More Segues
 17. Core Motion and Camera
+
+# Videos
+https://github.com/duliodenis/cs193p-Fall-2017
