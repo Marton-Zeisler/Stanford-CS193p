@@ -8,23 +8,39 @@
 
 import UIKit
 
+
+
 class ViewController: UIViewController {
     
-    var flipCount = 0 {
+    private(set) var flipCount = 0 {
         didSet{
-            flipCountLabel.text = "Flips: \(flipCount)"
-            flipCountLabel.text = "Flips: \(flipCount)"
+            updateFlipCountLabel()
         }
     }
     
-    @IBOutlet weak var flipCountLabel: UILabel!
-    @IBOutlet var cardButtons: [UIButton]!
-    
-    lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count+1)/2) // It's not initialised immediately, only gets initialised when someone tries to use game. DidSet is not available for lazy variables
-    
-    @IBAction func touchCard(_ sender: UIButton) {
-        flipCount += 1
+    private func updateFlipCountLabel(){
+        let attributes: [NSAttributedString.Key: Any] = [.strokeWidth: 5.0, .strokeColor: UIColor.orange]
         
+        let attributesString = NSAttributedString(string: "Flips: \(flipCount)", attributes: attributes)
+        flipCountLabel.attributedText = attributesString
+    }
+    
+    var numberOfPairsOfCards: Int{
+        return (cardButtons.count+1)/2
+    }
+    
+    @IBOutlet private weak var flipCountLabel: UILabel!{
+        didSet{
+            updateFlipCountLabel()
+        }
+    }
+    @IBOutlet private var cardButtons: [UIButton]!
+    
+    private lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards) // It's not initialised immediately, only gets initialised when someone tries to use game. DidSet is not available for lazy variables
+    
+    @IBAction private func touchCard(_ sender: UIButton) {
+        flipCount += 1
+    
         if let cardNumber = cardButtons.index(of: sender){
             game.chooseCard(at: cardNumber)
             updateViewFromModel()
@@ -33,7 +49,7 @@ class ViewController: UIViewController {
         }
     }
     
-    func updateViewFromModel(){
+    private func updateViewFromModel(){
         for index in cardButtons.indices{
             let button = cardButtons[index]
             let card = game.cards[index]
@@ -47,17 +63,30 @@ class ViewController: UIViewController {
         }
     }
     
-    var emojiChoices = ["🐶","🦊","🐸","🐱", "🦋", "🐙", "🐀", "🐈", "🐠"]
-    var emoji = [Int: String]()
+    private var emojiChoices = "🐶🦊🐸🐱🦋🐙🐀🐈🐠"
     
-    func emoji(for card: Card) ->String{
-        if emoji[card.identifier] == nil && emojiChoices.count > 0{
-            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices.count)))
-            emoji[card.identifier] = emojiChoices.remove(at: randomIndex)
+    private var emoji = [Card: String]()
+    
+    private func emoji(for card: Card) ->String{
+        if emoji[card] == nil && emojiChoices.count > 0{
+            let randomStringIndex = emojiChoices.index(emojiChoices.startIndex, offsetBy: emojiChoices.count.arc4random)
+            emoji[card] = String(emojiChoices.remove(at: randomStringIndex))
         }
         
-        return emoji[card.identifier] ?? "?"
+        return emoji[card] ?? "?"
     }
     
 }
 
+extension Int{
+    /// Generates a andom number and returns it
+    var arc4random: Int{
+        if self > 0{
+            return Int(arc4random_uniform(UInt32(self)))
+        }else if self < 0{
+            return -Int(arc4random_uniform(UInt32(abs(self))))
+        }else{
+            return 0
+        }
+    }
+}
